@@ -533,6 +533,7 @@ def run_experiment(
     max_new_tokens: int,
     temperature: float,
 ) -> None:
+    # Deprecated in the new execution order (phases outer loop). Retained for compatibility.
     for p in phases:
         run_phase(exp, model, tokenizer, p, max_new_tokens=max_new_tokens, temperature=temperature)
     evaluate_experiment(exp)
@@ -610,48 +611,68 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     # Load model/tokenizer once
     model, tokenizer = load_model_and_tokenizer(args.model)
 
-    total = len(experiments)
+    total_experiments = len(experiments)
+    total_phases = len(args.phases)
     start_all = time.time()
-    durations: List[float] = []
+    durations: List[float] = []  # per (phase,experiment) unit
 
     # Initialize TUI with empty lines
     _tui.init()
 
-    for i, exp in enumerate(experiments, start=1):
-        exp_start = time.time()
-        log.info("")
-        log.info("=== Experiment %d/%d: %s ===", i, total, exp.experiment_name)
-        run_experiment(
-            exp,
-            model,
-            tokenizer,
-            phases=args.phases,
-            max_new_tokens=args.max_new_tokens,
-            temperature=args.temperature,
-        )
-        elapsed_exp = time.time() - exp_start
-        durations.append(elapsed_exp)
-
-        # Progress report (experiments-level)
-        done = i
-        remaining = total - done
-        avg = sum(durations) / len(durations)
-        eta = avg * remaining
-        # Update TUI overall line (not logged to file to avoid size blow-up)
-        _tui.update(
-            overall=(
-                f"Overall: {done}/{total} experiments done; {remaining} remaining; "
-                f"est remaining {format_td(eta)}"
+    # New execution order: for each desired phase, run all experiments
+    for pi, phase_no in enumerate(args.phases, start=1):
+        for ei, exp in enumerate(experiments, start=1):
+            unit_start = time.time()
+            log.info("")
+            log.info(
+                "=== Phase %d/%d | Experiment %d/%d: %s ===",
+                pi,
+                total_phases,
+                ei,
+                total_experiments,
+                exp.experiment_name,
             )
-        )
-        # Also log a compact line to file (once per experiment)
-        log.info(
-            "Progress snapshot: %d/%d experiments done; %d remaining; est remaining %s",
-            done,
-            total,
-            remaining,
-            format_td(eta),
-        )
+            run_phase(
+                exp,
+                model,
+                tokenizer,
+                phase_no,
+                max_new_tokens=args.max_new_tokens,
+                temperature=args.temperature,
+            )
+            # Evaluate and report this experiment immediately after the phase completes
+            evaluate_experiment(exp)
+            elapsed_unit = time.time() - unit_start
+            durations.append(elapsed_unit)
+
+            # Progress within current phase (experiments-level)
+            done = ei
+            remaining = total_experiments - done
+            avg = sum(durations) / len(durations)
+            eta = avg * remaining
+            _tui.update(
+                overall=(
+                    f"Phase {pi}/{total_phases}: {done}/{total_experiments} experiments done; "
+                    f"{remaining} remaining; est remaining {format_td(eta)}"
+                )
+            )
+            log.info(
+                "Progress snapshot (phase %d/%d): %d/%d experiments done; %d remaining; est remaining %s",
+                pi,
+                total_phases,
+                done,
+                total_experiments,
+                remaining,
+                format_td(eta),
+            )
+
+        # Reset duration stats per phase for better ETA accuracy per phase
+        durations.clear()
+        _tui.update(overall=(f"Completed phase {pi}/{total_phases}. Moving on…"))
+
+    # After all phases are done, run evaluation once per experiment
+    for exp in experiments:
+        evaluate_experiment(exp)
 
     total_elapsed = time.time() - start_all
     _tui.finalize()
