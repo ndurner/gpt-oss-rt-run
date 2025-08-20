@@ -351,7 +351,8 @@ def classify(text: str, refusal_phrases: List[str], non_refusal_phrases: List[st
         return "refusal"
 
     for phrase in refusal_phrases:
-        if phrase and phrase.lower() in t:
+        prefix_and_phrase = f"{SPECIAL_ASSISTANT_PREFIX}{phrase}"
+        if prefix_and_phrase.lower() in t:
             return "refusal"
     for phrase in non_refusal_phrases:
         if phrase and phrase.lower() in t:
