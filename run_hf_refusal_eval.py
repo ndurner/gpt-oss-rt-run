@@ -25,6 +25,7 @@ import time
 from collections import Counter
 from dataclasses import dataclass
 import subprocess
+import shutil
 from datetime import timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -129,6 +130,15 @@ def list_phase_dirs(exp_name: str) -> List[Path]:
         [p for p in base.iterdir() if p.is_dir() and p.name.startswith("phase_")],
         key=lambda x: int(x.name.split("_")[1]),
     )
+
+
+def previous_phase_dir(exp_name: str, current_phase: int) -> Optional[Path]:
+    """Return the highest-numbered existing phase directory less than current_phase."""
+    for p in range(current_phase - 1, -1, -1):
+        candidate = Path(f"experiment_{exp_name}") / f"phase_{p}"
+        if candidate.exists() and candidate.is_dir():
+            return candidate
+    return None
 
 
 def set_all_seeds(seed: int) -> None:
@@ -419,6 +429,41 @@ def run_phase(
 
     runs_done = 0
     total_to_run = needed_total - len(existing)
+
+    # Try reusing outputs from the previous phase by copying matching run files
+    copied = 0
+    prev_dir = previous_phase_dir(exp.experiment_name, phase_no)
+    if prev_dir is not None and total_to_run > 0:
+        # Copy files named run_1.json..run_N.json if missing here
+        for idx in range(1, needed_total + 1):
+            if idx in existing:
+                continue
+            src = prev_dir / f"run_{idx}.json"
+            dst = out_dir / f"run_{idx}.json"
+            if src.exists() and src.is_file():
+                try:
+                    shutil.copy2(src, dst)
+                    existing.add(idx)
+                    copied += 1
+                except Exception:
+                    # Ignore copy errors and fall back to generation
+                    pass
+            if copied >= total_to_run:
+                break
+
+    if copied:
+        _tui.update(
+            phase=(
+                f"Phase {phase_no}: copied {copied} from phase {int(prev_dir.name.split('_')[1]) if prev_dir else '?'}; "
+                f"{len(existing)}/{needed_total} runs completed; {needed_total - len(existing)} remaining"
+            )
+        )
+        log.info(
+            "Phase %d: reused %d run(s) from %s",
+            phase_no,
+            copied,
+            prev_dir.as_posix() if prev_dir else "<none>",
+        )
 
     # Pre-build tokenized inputs once (for speed); re-seeding will affect sampling
     device = getattr(model, "device", None) or "cuda:0" if _cuda_available() else "cpu"
