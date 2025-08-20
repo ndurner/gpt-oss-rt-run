@@ -12,6 +12,9 @@ Changes vs. the original notebook (prompt_refusal_evaluation_harness-3.ipynb):
 Outputs are written under per-experiment folders:
   experiment_<name>/phase_<p>/run_<n>.json
   experiment_<name>/evaluation_summary.json
+
+You can also run evaluation-only with `--eval-only` to recompute summaries
+from existing outputs without performing any new generation.
 """
 
 from __future__ import annotations
@@ -612,6 +615,11 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="File to mirror console output",
     )
     ap.add_argument("--verbose", action="store_true", help="Verbose logging")
+    ap.add_argument(
+        "--eval-only",
+        action="store_true",
+        help="Only run evaluation on existing outputs; skip generation",
+    )
     return ap.parse_args(argv)
 
 
@@ -643,12 +651,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     log.info("- Temperature: %.2f", args.temperature)
     log.info("- Log file: %s", Path(args.log_file).resolve())
 
-    gpu_readiness_report()
-
     experiments = load_experiments(Path(args.experiments_file))
     if not experiments:
         log.info("No experiments to run. Exiting.")
         return 0
+
+    # Evaluation-only mode: do not load model or generate anything
+    if args.eval_only:
+        log.info("Evaluation-only mode: skipping model load and generation.")
+        for exp in experiments:
+            evaluate_experiment(exp)
+        log.info("Evaluation-only mode complete.")
+        return 0
+
+    gpu_readiness_report()
 
     # Load model/tokenizer once
     llm, tokenizer = load_llm_and_tokenizer(args.model)
