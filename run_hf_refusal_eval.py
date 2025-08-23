@@ -626,6 +626,11 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         help="Path to experiments.json (array of experiments)",
     )
     ap.add_argument(
+        "--batch-name",
+        default=None,
+        help="Only run experiments whose 'batch' equals this value (skips others)",
+    )
+    ap.add_argument(
         "--model",
         default="openai/gpt-oss-20b",
         help="HF model repo or path (default: openai/gpt-oss-20b)",
@@ -653,7 +658,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     return ap.parse_args(argv)
 
 
-def load_experiments(path: Path) -> List[Experiment]:
+def load_experiments(path: Path, *, batch_name: Optional[str] = None) -> List[Experiment]:
     if not path.exists():
         raise FileNotFoundError(f"Experiments file not found: {path}")
     with open(path, "r", encoding="utf-8") as f:
@@ -663,6 +668,10 @@ def load_experiments(path: Path) -> List[Experiment]:
     exps = []
     for obj in data:
         try:
+            # If a batch filter is provided, skip experiments without a matching 'batch' field
+            if batch_name is not None:
+                if not isinstance(obj, dict) or obj.get("batch") != batch_name:
+                    continue
             exps.append(Experiment.from_dict(obj))
         except Exception as e:
             log.info("Skipping malformed experiment entry: %s (error: %s)", obj, e)
@@ -676,14 +685,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     log.info("Starting refusal experiments")
     log.info("- Experiments list: %s", args.experiments_file)
     log.info("- Model: %s", args.model)
+    if args.batch_name is not None:
+        log.info("- Batch filter: %s", args.batch_name)
     log.info("- Phases: %s", ",".join(map(str, args.phases)))
     log.info("- Max new tokens: %d", args.max_new_tokens)
     log.info("- Temperature: %.2f", args.temperature)
     log.info("- Log file: %s", Path(args.log_file).resolve())
 
-    experiments = load_experiments(Path(args.experiments_file))
+    experiments = load_experiments(Path(args.experiments_file), batch_name=args.batch_name)
     if not experiments:
-        log.info("No experiments to run. Exiting.")
+        if args.batch_name is not None:
+            log.info("No experiments matched batch '%s'. Exiting.", args.batch_name)
+        else:
+            log.info("No experiments to run. Exiting.")
         return 0
 
     # Evaluation-only mode: do not load model or generate anything
