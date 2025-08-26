@@ -1,7 +1,7 @@
 # Red‑Teaming Challenge - OpenAI gpt-oss-20b
 
 # Introduction
-This repository contains primary assets submitted to the [Kaggle red-teaming challenge of OpenAI gpt-oss](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming).
+This repository contains primary assets submitted to the [Kaggle red-teaming challenge of OpenAI gpt-oss](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming), as well as supplementary assets.
 
 # Overiew
 * the inference + evaluation script for findings 1-4 is in linguistic/
