@@ -10,3 +10,12 @@ tournament/tournament_output-*.tar.gz
 tournament/tournament_output-*/
 .env.sh
 .DS_Store
+figures/findings_dumbbell_forest.*
+figures/findings_non_refusal_point_errorbars.*
+figures/findings_non_refusal_summary.csv
+scripts/update_kids_evals-onlyxml.py
+scripts/update_kids_evals.py
+scripts/update_responses_grader_combined.py
+scripts/update_zipb_batch3.py
+kaggle_submission/file_attachments/MAPPINGS
+kaggle_submission/example-harmony-findings.json
