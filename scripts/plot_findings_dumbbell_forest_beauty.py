@@ -368,14 +368,14 @@ def main():
         handles=legend_elems,
         frameon=False,
         loc="upper right",
-        bbox_to_anchor=(1.0, -0.16),
+        bbox_to_anchor=(1.0, -0.18),
         ncol=3
     )
 
     # Titles
     metric_hint = "keyword triage" if args.metric == "non_refusal" else ("LLM grader" if args.metric == "harmful" else args.metric)
     fig.suptitle("Framing and language shift gpt-oss-20B assistance rates (80 runs; Wilson 95% CI)",
-                 y=0.965, fontsize=18, fontweight="semibold")
+                 y=0.965, fontsize=18, fontweight="bold")
     # Place a left-aligned subtitle beneath the suptitle (not overlapping).
     fig.text(left + 0.01, 0.90,
              f"Baseline → Bypass per finding. Δ with Newcombe 95% CI · metric: {metric_hint}",
