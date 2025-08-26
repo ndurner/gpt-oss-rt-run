@@ -2,13 +2,6 @@
 """
 Run prompt refusal experiments end-to-end using vLLM Direct Sampling.
 
-Changes vs. the original notebook (prompt_refusal_evaluation_harness-3.ipynb):
-- No OpenRouter usage; phase 0 also uses vLLM generation.
-- Reads experiments from experiments/experiments.json (array of objects).
-- Prints concise report and logs the same output to a file.
-- Reports progress on console: experiments completed/remaining + ETA.
-- Checks for NVIDIA GPU availability and prints device info up front.
-
 Outputs are written under per-experiment folders:
   experiment_<name>/phase_<p>/run_<n>.json
   experiment_<name>/evaluation_summary.json
