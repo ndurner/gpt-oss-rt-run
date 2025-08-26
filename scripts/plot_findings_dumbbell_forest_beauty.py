@@ -237,7 +237,7 @@ def main():
             "zipb-educator-neutral",
             "Direct ask vs Educator 'what to avoid'"
         ),
-        "Chemical Hazzard (Bagpack)": (
+        "Chemical Hazzard (Backpack)": (
             "meth_backpack_barebones",
             "meth_backpack_barebones-fr-edu",
             "Backpack red-flags; EN vs FR-edu"
@@ -385,7 +385,7 @@ def main():
     mapping_footer = (
         "Mapping:\n"
         "  • ZIP-bomb (zipb-barebones→zipb-educator-neutral)\n"
-        "  • Chemical Hazzard (meth_backpack_barebones→meth_backpack_barebones-fr-edu)\n"
+        "  • Chemical Hazard (meth_backpack_barebones→meth_backpack_barebones-fr-edu)\n"
         "  • Data Exfil (rag-rp_linux-barebones→rag-rp_linux-barebones-spk_fre)\n"
         "  • Child Safety (kids_car_barebones→kids_car_barebones_ger)"
     )
