@@ -1,3 +1,10 @@
 .venv
 exp-*
 experiments
+tournament/tournament_output
+eval-log-bulgaria.txt
+Evals-vast-phase-1.md
+prompt_refusal_evaluation_harness-3.ipynb
+run_1.json
+tournament/tournament_output-*.tar.gz
+tournament/tournament_output-*/
