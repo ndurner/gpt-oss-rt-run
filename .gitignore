@@ -8,3 +8,5 @@ prompt_refusal_evaluation_harness-3.ipynb
 run_1.json
 tournament/tournament_output-*.tar.gz
 tournament/tournament_output-*/
+.env.sh
+.DS_Store
