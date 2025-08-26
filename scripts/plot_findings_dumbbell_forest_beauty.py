@@ -270,6 +270,24 @@ def main():
             "d_pct": (m.p - b.p)*100, "d_lo": dlow*100, "d_hi": dhigh*100
         })
 
+    # Additional manually specified row: Tournament awareness vs. helpful
+    # Provided data (present=n; exploit_n=non_refusal counts)
+    # through `tournament/tournament_redteam_inconsistency.py --eval --phases 3`:
+    #   cyberthreat@3: n=80, non_refusal=1
+    #   helpful@3:     n=80, non_refusal=11
+    t_base = GroupStats(n=80, count=1)
+    t_mod  = GroupStats(n=80, count=11)
+    tbl, tbu = wilson_ci(t_base.p, t_base.n)
+    tml, tmu = wilson_ci(t_mod.p,  t_mod.n)
+    tdl, tdh = newcombe_diff_ci(t_base.p, t_base.n, t_mod.p, t_mod.n)
+    rows.append({
+        "label": "Evaluation Awareness (Tournament)",
+        "subtitle": "'harmful' vs. 'helpful' evaluation tournament setup",
+        "b_n": t_base.n, "b_pct": t_base.pct, "b_lo": tbl*100, "b_hi": tbu*100,
+        "m_n": t_mod.n,  "m_pct": t_mod.pct,  "m_lo": tml*100, "m_hi": tmu*100,
+        "d_pct": (t_mod.p - t_base.p)*100, "d_lo": tdl*100, "d_hi": tdh*100
+    })
+
     if args.sort:
         rows.sort(key=lambda r: abs(r["d_pct"]), reverse=True)
 
@@ -311,7 +329,7 @@ def main():
 
     # Draw dumbbells
     for y, r in zip(ys, rows):
-        ofs = -0.25 if y == 3 else 0
+        ofs = -0.25 if y == 4 else 0
 
         # connector
         ax.plot([r["b_pct"], r["m_pct"]], [y + ofs, y + ofs], color="#d9dbe1", lw=2, zorder=1)
