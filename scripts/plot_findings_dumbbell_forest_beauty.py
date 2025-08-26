@@ -237,7 +237,7 @@ def main():
             "zipb-educator-neutral",
             "Direct ask vs Educator 'what to avoid'"
         ),
-        "Chemical Hazzard (Backpack)": (
+        "Chemical Hazard (Backpack)": (
             "meth_backpack_barebones",
             "meth_backpack_barebones-fr-edu",
             "Backpack red-flags; EN vs FR-edu"
