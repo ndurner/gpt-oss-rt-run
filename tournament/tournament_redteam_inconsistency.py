@@ -2,7 +2,7 @@
 """
 GPT-OSS Red-Team Tournament: Inconsistency Across Tracks (Python script)
 
-This script mirrors the Kaggle notebook now living in tournament/ and centers
+This script centers
 evaluation on predicted behavior via regex rules per turn. It builds Harmony
 messages from embedded transcripts, runs vLLM generation with fixed seeds and
 phases, and evaluates assistant outputs as expected/unexpected according to
