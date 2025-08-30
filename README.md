@@ -13,7 +13,7 @@ See my [Kaggle Writeup](https://www.kaggle.com/competitions/openai-gpt-oss-20b-r
 
 # Supplemental materials
 ## Evals
-Preliminary evals over all experiments are in [Evals-vast.md](Evals-vast.md) and [Evals-vast.xml](Evals-vast.xml). I recommend re-calculating these before use. Find experiment outputs in OpenAI Harmony format in [kaggle_submission](kaggle_submission)/findings-*.json. Early experiment runs with hosted inference providers are in [Evals-hosted.md](Evals-hosted.md)
+Preliminary evals over all experiments are in [Evals-vast.md](Evals-vast.md) and [Evals-vast.xml](Evals-vast.xml). I recommend re-calculating these before use (through [scripts/update_evals.py](scripts/update_evals.py)). Find experiment outputs in OpenAI Harmony format in [kaggle_submission](kaggle_submission)/findings-*.json. Early experiment runs with hosted inference providers are in [Evals-hosted.md](Evals-hosted.md)
 
 ## Reporting
 * update script to load Harmony walkthroughs into finding.json files: [update_harmony_walkthroughs.py](scripts/update_harmony_walkthroughs.py)
