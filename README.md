@@ -2,7 +2,7 @@
 ![Logo](assets/harmony.jpg)
 
 # Introduction
-This repository contains primary assets submitted to the [Kaggle red-teaming challenge of OpenAI gpt-oss](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming), as well as supplementary assets.
+This repository contains primary assets submitted to the [Kaggle red-teaming challenge of OpenAI gpt-oss](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming), as well as supplementary assets. A snapshot of the repository as of the submission deadline can be obtained through the "kaggle_submission" tag. This repository continues to evolve as work continues.
 
 # Overview
 * the inference + evaluation script for findings 1-4 is in linguistic/
