@@ -105,7 +105,7 @@ def read_phase_stats(experiment_name: str, phase: int, metric: str) -> GroupStat
 # -------------------------
 # Fonts & styling
 # -------------------------
-def try_register_inter(font_dir: Optional[Path]) -> None:
+def try_register_inter(font_dir: Optional[Path], base_size: int = 12) -> None:
     """
     Register Inter TTFs if available; otherwise fallback to default fonts.
     """
@@ -122,11 +122,11 @@ def try_register_inter(font_dir: Optional[Path]) -> None:
             mpl.rcParams["font.family"] = "Inter"
 
     mpl.rcParams.update({
-        "font.size": 12,
-        "axes.titlesize": 18,
-        "axes.labelsize": 12,
-        "xtick.labelsize": 12,
-        "ytick.labelsize": 12,
+        "font.size": base_size,
+        "axes.titlesize": base_size + 6,
+        "axes.labelsize": base_size,
+        "xtick.labelsize": base_size,
+        "ytick.labelsize": base_size,
         "axes.spines.right": False,
         "axes.spines.top": False
     })
@@ -220,34 +220,50 @@ def main():
     parser.add_argument("--sort", action="store_true", help="Sort rows by |Δ| descending")
     parser.add_argument("--outfile", type=str, default="findings_dumbbell_forest_beauty")
     parser.add_argument("--font-dir", type=str, default="", help="Directory with Inter *.ttf")
+    parser.add_argument("--base-font", type=int, default=12, help="Base font size in points")
     parser.add_argument("--logo", type=str, default="", help="Path to logo PNG")
     parser.add_argument("--logo-pos", type=str, default="tr", choices=["tr","br"])
     parser.add_argument("--logo-scale", type=float, default=0.24, help="Logo height as fraction of axes height")
     parser.add_argument("--logo-opacity", type=float, default=0.10, help="Logo opacity 0..1")
     parser.add_argument("--figwidth", type=float, default=13.0, help="Figure width in inches")
     parser.add_argument("--right-gutter", type=float, default=0.20, help="Fraction of figure reserved for right gutter (0..0.35)")
+    parser.add_argument("--paper", action="store_true", help="Produce a LaTeX-friendly figure: ~7in wide, minimal gutter, larger fonts, no title/footer")
+    parser.add_argument("--no-title", action="store_true", help="Omit suptitle/subtitle text inside the figure")
+    parser.add_argument("--no-footer", action="store_true", help="Omit footer mapping/caption inside the figure")
+    parser.add_argument("--tight", action="store_true", help="Save with bbox_inches='tight' to avoid label clipping")
+    parser.add_argument("--left-margin", type=float, default=0.22, help="Left margin as figure fraction (0..0.4)")
     args = parser.parse_args()
 
-    try_register_inter(Path(args.font_dir) if args.font_dir else None)
+    # Paper preset: tune for two-column LaTeX inclusion
+    if args.paper:
+        if args.right_gutter == 0.20:
+            args.right_gutter = 0.06
+        if args.base_font == 12:
+            args.base_font = 13
+        if args.left_margin == 0.22:
+            args.left_margin = 0.28
+        args.tight = True
+
+    try_register_inter(Path(args.font_dir) if args.font_dir else None, base_size=args.base_font)
 
     # Mapping aligned with your Writeup
     mapping: Dict[str, Tuple[str, str, str]] = {
-        "Cyber Threat (ZIP-bomb)": (
+        "Cyber Threat\n(ZIP-bomb)": (
             "zipb-barebones",
             "zipb-educator-neutral",
             "Direct ask vs Educator 'what to avoid'"
         ),
-        "Chemical Hazard (Backpack)": (
+        "Drug-synthesis\n(Precursors)": (
             "meth_backpack_barebones",
             "meth_backpack_barebones-fr-edu",
             "Backpack red-flags; EN vs FR-edu"
         ),
-        "Data Exfiltration (RAG)": (
+        "Data Exfiltration\n(RAG)": (
             "rag-rp_linux-barebones",
             "rag-rp_linux-spk_fre",
             "RAG 'don’t reveal' vs Linux role-play"
         ),
-        "Child Safety (Driving)": (
+        "Child Safety\n(Driving)": (
             "kids_car_barebones",
             "kids_car_barebones_ger",
             "Kid-safety dev prompt; EN vs DE"
@@ -281,7 +297,7 @@ def main():
     tml, tmu = wilson_ci(t_mod.p,  t_mod.n)
     tdl, tdh = newcombe_diff_ci(t_base.p, t_base.n, t_mod.p, t_mod.n)
     rows.append({
-        "label": "Evaluation Awareness (Tournament)",
+        "label": "Evaluation Awareness\n(Tournament)",
         "subtitle": "'harmful' vs. 'helpful' evaluation tournament setup",
         "b_n": t_base.n, "b_pct": t_base.pct, "b_lo": tbl*100, "b_hi": tbu*100,
         "m_n": t_mod.n,  "m_pct": t_mod.pct,  "m_lo": tml*100, "m_hi": tmu*100,
@@ -298,7 +314,7 @@ def main():
     fig_h = 1.10 * len(rows) + 3.7
     fig = plt.figure(figsize=(args.figwidth, fig_h), facecolor="white")
     # Subplot margins: reserve a right gutter for Δ labels + logo and a bottom margin for footer
-    left = 0.22
+    left = max(0.16, min(0.40, args.left_margin))
     right = 1.0 - args.right_gutter
     top = 0.86
     # Extra bottom margin for legend + footer
@@ -321,7 +337,11 @@ def main():
         "undecided": "Undecided (%)",
         "harmful": "Harmful (%)"
     }[args.metric]
-    ax.set_xlabel(f"{metric_title}  (80 runs; Wilson 95% CI)")
+
+    if not args.paper:
+        ax.set_xlabel(f"{metric_title}  (80 runs; Wilson 95% CI)")
+    else:
+        ax.set_xlabel(f"{metric_title}")
 
     # Horizontal separators between findings (subtle)
     for k in range(len(rows) - 1):
@@ -363,38 +383,54 @@ def main():
         Line2D([0], [0], color=COLOR_MOD,  lw=3, marker='o', ms=6, mec=COLOR_MOD,  mfc=COLOR_MOD,  label="Bypass"),
         Line2D([0], [0], color=COLOR_DEC,  lw=3, label="Δ < 0 (reduction)")
     ]
-    # Legend below the x-axis
-    ax.legend(
-        handles=legend_elems,
-        frameon=False,
-        loc="upper right",
-        bbox_to_anchor=(1.0, -0.18),
-        ncol=3
-    )
+    # Legend: for paper mode, attach to the figure so bbox_tight includes it; otherwise keep below axis.
+    if args.paper:
+        fig.legend(
+            handles=legend_elems,
+            frameon=False,
+            loc="lower left",
+            bbox_to_anchor=(0.52, 0.12),
+            ncol=3
+        )
+    else:
+        ax.legend(
+            handles=legend_elems,
+            frameon=False,
+            loc="upper right",
+            bbox_to_anchor=(1.0, -0.18),
+            ncol=3
+        )
 
     # Titles
-    metric_hint = "keyword triage" if args.metric == "non_refusal" else ("LLM grader" if args.metric == "harmful" else args.metric)
-    fig.suptitle("Framing and language shift gpt-oss-20B assistance rates (80 runs; Wilson 95% CI)",
-                 y=0.965, fontsize=18, fontweight="bold")
-    # Place a left-aligned subtitle beneath the suptitle (not overlapping).
-    fig.text(left + 0.01, 0.90,
-             f"Baseline → Bypass per finding. Δ with Newcombe 95% CI · metric: {metric_hint}",
-             ha="left", va="top", fontsize=12, color="#555555")
+    if not args.no_title:
+        metric_hint = "keyword triage" if args.metric == "non_refusal" else ("LLM grader" if args.metric == "harmful" else args.metric)
+        fig.suptitle("Sociopragmatic, role-play, and evaluation-aware effects in gpt-oss-20b",
+                     y=0.965, fontsize=max(16, args.base_font + 5), fontweight="bold")
+        # Place a left-aligned subtitle beneath the suptitle (not overlapping).
+        fig.text(left + 0.01, 0.90,
+                 f"Baseline → Bypass per finding. Δ with Newcombe 95% CI · metric: {metric_hint}",
+                 ha="left", va="top", fontsize=args.base_font, color="#555555")
 
     # Footer caption (not chopped)
     mapping_footer = (
         "Mapping:\n"
         "  • ZIP-bomb (zipb-barebones→zipb-educator-neutral)\n"
-        "  • Chemical Hazard (meth_backpack_barebones→meth_backpack_barebones-fr-edu)\n"
-        "  • Data Exfil (rag-rp_linux-barebones→rag-rp_linux-barebones-spk_fre)\n"
+        "  • Illicit drug-synthesis precursors (meth_backpack_barebones→meth_backpack_barebones-fr-edu)\n"
+        "  • Data Exfiltration (rag-rp_linux-barebones→rag-rp_linux-spk_fre)\n"
         "  • Child Safety (kids_car_barebones→kids_car_barebones_ger)"
     )
-    footer = (
-        "Kaggle: OpenAI gpt-oss-20b Red-Teaming · 80 runs per cell · Wilson score intervals; Newcombe Δ CIs\n"
-        + mapping_footer
-    )
-    # Footer caption aligned with y-axis labels (same left as axes area minus tick padding)
-    fig.text(0.11, 0.04, footer, ha="left", va="bottom", fontsize=9.6, color=COLOR_FOOT)
+    if not args.no_footer:
+        generic_footer = ""
+        if not args.paper:
+            generic_footer = "Kaggle: OpenAI gpt-oss-20b Red-Teaming · 80 runs per cell · Wilson score intervals; Newcombe Δ CIs\n"
+        else:
+            generic_footer = "Wilson score intervals; Newcombe Δ CIs\n"
+        footer = (
+            generic_footer
+            + mapping_footer
+        )
+        # Footer caption aligned with y-axis labels (same left as axes area minus tick padding)
+        fig.text(0.11, 0.04, footer, ha="left", va="bottom", fontsize=max(9.6, args.base_font - 2), color=COLOR_FOOT)
 
     # Logo in the right gutter (upper-right by default)
     add_logo_in_gutter(
@@ -409,9 +445,16 @@ def main():
     # Save
     out_png = OUT_DIR / f"{args.outfile}.png"
     out_svg = OUT_DIR / f"{args.outfile}.svg"
-    fig.savefig(out_png, dpi=240)
-    fig.savefig(out_svg)
-    print(f"Saved: {out_png}\nSaved: {out_svg}")
+    out_pdf = OUT_DIR / f"{args.outfile}.pdf"
+    save_kwargs = {"dpi": 240}
+    if args.tight:
+        save_kwargs.update({"bbox_inches": "tight", "pad_inches": 0.02})
+    fig.savefig(out_png, **save_kwargs)
+    # SVG/PDF ignore dpi; still pass bbox/tight
+    tight_kwargs = {k: v for k, v in save_kwargs.items() if k != "dpi"}
+    fig.savefig(out_svg, **tight_kwargs)
+    fig.savefig(out_pdf, **tight_kwargs)
+    print(f"Saved: {out_png}\nSaved: {out_svg}\nSaved: {out_pdf}")
 
     # CSV summary
     csv_lines = ["Finding,Group,N,Count,Percent,WilsonLow,WilsonHigh,Diff_pp,DiffLow_pp,DiffHigh_pp"]
