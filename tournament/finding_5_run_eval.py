@@ -236,8 +236,18 @@ def build_prefill_with_harmony(messages: List[Dict[str, str]], tokenizer):
     return prefill_ids, prefill_text, stop_token_ids
 
 
-def run_generation_vllm(llm, *, prefill_ids: List[int], stop_token_ids: List[int], max_new_tokens: int, temperature: float, seed: int) -> str:
+def run_generation_vllm(
+    llm,
+    *,
+    prefill_ids: List[int],
+    stop_token_ids: List[int],
+    max_new_tokens: int,
+    temperature: float,
+    seed: int,
+    logit_bias: Optional[Dict[int, float]] = None,
+) -> Tuple[str, List[int]]:
     from vllm import SamplingParams  # type: ignore
+    from vllm.sampling_params import GuidedDecodingParams  # type: ignore
 
     params = SamplingParams(
         temperature=temperature,
@@ -246,9 +256,14 @@ def run_generation_vllm(llm, *, prefill_ids: List[int], stop_token_ids: List[int
         stop_token_ids=stop_token_ids or None,
         skip_special_tokens=False,
         spaces_between_special_tokens=False,
+        logit_bias=logit_bias,
     )
     outputs = llm.generate(prompt_token_ids=[prefill_ids], sampling_params=params)
-    return outputs[0].outputs[0].text
+    out = outputs[0].outputs[0]
+    # vLLM returns token IDs on each Output; prefer token_ids if present.
+    gen_text: str = out.text
+    gen_ids: List[int] = getattr(out, "token_ids", None) or []
+    return gen_text, gen_ids
 
 
 def extract_final_assistant_text(output_text: str) -> str:
@@ -506,7 +521,34 @@ def run_tournament(
                         {"role": "user", "content": (user_text or "").strip()},
                     ]
                     prefill_ids, prefill_text, stop_ids = build_prefill_with_harmony(messages, tokenizer)
-                    generated = run_generation_vllm(
+
+                    # We want first few tokens at very low temperature, length equal to
+                    # the control string's tokenization length, then continue with the
+                    # user-specified temperature. The control string is the Harmony
+                    # channel switch to analysis.
+                    control_text = "<|channel|>analysis<|message|>"
+                    control_ids = tokenizer.encode(control_text, add_special_tokens=False)
+
+                    # 1) Generate low-temp prefix tokens with negative bias against ellipsis
+                    #    Compute token ids for the ellipsis character and penalize them.
+                    ellipsis_ids = tokenizer.encode("…", add_special_tokens=False) or []
+                    bias_val = -8.0  # strong negative bias without making it impossible
+                    neg_bias = {tid: bias_val for tid in ellipsis_ids}
+
+                    low_text, low_ids = run_generation_vllm(
+                        llm,
+                        prefill_ids=prefill_ids,
+                        stop_token_ids=stop_ids,
+                        max_new_tokens=len(control_ids),
+                        temperature=0.1,
+                        seed=seed,
+                        logit_bias=neg_bias if neg_bias else None,
+                    )
+                    # Append the low-temp generated ids to the prompt for the next stage
+                    prefill_ids = prefill_ids + low_ids
+
+                    # 2) Continue with normal temperature for the remaining tokens
+                    gen_text, gen_ids = run_generation_vllm(
                         llm,
                         prefill_ids=prefill_ids,
                         stop_token_ids=stop_ids,
@@ -514,7 +556,8 @@ def run_tournament(
                         temperature=temperature,
                         seed=seed,
                     )
-                    output_text = f"{prefill_text}{generated}"
+                    generated = gen_text
+                    output_text = f"{prefill_text}{low_text}{gen_text}"
 
                     session_messages.append({"role": "user", "content": (user_text or "").strip()})
                     assistant_tail = extract_final_assistant_text(output_text)
