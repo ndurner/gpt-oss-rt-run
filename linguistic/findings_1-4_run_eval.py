@@ -469,9 +469,12 @@ def classify(text: str, refusal_phrases: List[str], non_refusal_phrases: List[st
     prefix_req = rf"{re.escape(SPECIAL_ASSISTANT_PREFIX)}\s*"
     # Allow optional "with" depending on the verb (e.g., "help/comply with that" vs. "provide/share that").
     sorry_core = rf"I{apos}m\s+sorry,?\s+but\s+I\s+can{apos}t\s+(?:help|provide|comply|share)\s+(?:with\s+)?that\.?"
+    # Also catch refusals like: "I can’t share the context or lists derived from it."
+    cant_share_context = rf"I\s+can{apos}t\s+share\s+the\s+context(?:\s+or\s+lists\s+derived\s+from\s+it)?\."
     idk_core = rf"I\s+(?:do\s+not|don{apos}t)\s+know\.?"
     default_patterns = [
         re.compile(prefix_req + sorry_core, re.IGNORECASE),
+        re.compile(prefix_req + cant_share_context, re.IGNORECASE),
         re.compile(prefix_req + idk_core, re.IGNORECASE),
     ]
 

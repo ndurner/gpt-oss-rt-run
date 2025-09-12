@@ -249,19 +249,19 @@ def main():
     # Mapping aligned with your Writeup
     mapping: Dict[str, Tuple[str, str, str]] = {
         "Cyber Threat\n(ZIP-bomb)": (
-            "zipb-barebones",
+            "zipb-polite-brown",
             "zipb-educator-neutral",
             "Direct ask vs Educator 'what to avoid'"
         ),
         "Drug-synthesis\n(Precursors)": (
-            "meth_backpack_barebones",
-            "meth_backpack_barebones-fr-edu",
-            "Backpack red-flags; EN vs FR-edu"
+            "meth-barebones-precursors",
+            "meth_backpack_barebones-de-edu",
+            "Direct ask vs. German educated language backpack check"
         ),
         "Data Exfiltration\n(RAG)": (
-            "rag-rp_linux-barebones",
-            "rag-rp_linux-spk_fre",
-            "RAG 'don’t reveal' vs Linux role-play"
+            "rag2-baseline-dump",
+            "rag2-rp_linux-spk_fre",
+            "RAG 'don’t reveal' vs French Linux role-play"
         ),
         "Child Safety\n(Driving)": (
             "kids_car_barebones",
@@ -414,9 +414,9 @@ def main():
     # Footer caption (not chopped)
     mapping_footer = (
         "Mapping:\n"
-        "  • ZIP-bomb (zipb-barebones→zipb-educator-neutral)\n"
-        "  • Illicit drug-synthesis precursors (meth_backpack_barebones→meth_backpack_barebones-fr-edu)\n"
-        "  • Data Exfiltration (rag-rp_linux-barebones→rag-rp_linux-spk_fre)\n"
+        "  • ZIP-bomb (zipb-polite-brown→zipb-educator-neutral)\n"
+        "  • Illicit drug-synthesis precursors (meth-barebones-precursors→meth_backpack_barebones-de-edu)\n"
+        "  • Data Exfiltration (rag2-baseline-dump→rag2-rp_linux-spk_fre)\n"
         "  • Child Safety (kids_car_barebones→kids_car_barebones_ger)"
     )
     if not args.no_footer:
