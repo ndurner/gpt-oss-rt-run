@@ -9,11 +9,11 @@ This repository contains primary assets submitted to the [Kaggle red-teaming cha
 * the script for finding 5 is in tournament/
 
 # Usage
-See my [Kaggle Writeup](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming/writeups/in-a-sweet-harmony-guardrail-bypasses-and-evaluati)
+See my [Kaggle Writeup](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming/writeups/in-a-sweet-harmony-guardrail-bypasses-and-evaluati) once it's made public by the challenge organizers.
 
 # Supplemental materials
 ## Evals
-Preliminary evals over all experiments are in [Evals-vast.md](Evals-vast.md) and [Evals-vast.xml](Evals-vast.xml). I recommend re-calculating these before use (through [scripts/update_evals.py](scripts/update_evals.py)). Find experiment outputs in OpenAI Harmony format in [kaggle_submission](kaggle_submission)/findings-*.json. Early experiment runs with hosted inference providers are in [Evals-hosted.md](Evals-hosted.md)
+Preliminary evals over all experiments are in [Evals.md](Evals.md) and [Evals.xml](Evals.xml). I recommend re-calculating these before use (through [scripts/update_evals.py](scripts/update_evals.py)). Find the condensed main findings in OpenAI Harmony format in [kaggle_submission](kaggle_submission)/findings-*.json. The raw models outputs are included in the Release as an attachment (experiments-raw.tar.xz). Early experiment runs with hosted inference providers are summarized in [Evals-hosted.md](Evals-hosted.md)
 
 ## Reporting
 * update script to load Harmony walkthroughs into finding.json files: [update_harmony_walkthroughs.py](scripts/update_harmony_walkthroughs.py)
