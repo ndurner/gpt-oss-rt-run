@@ -20,3 +20,4 @@ scripts/update_zipb_batch3.py
 kaggle_submission/file_attachments/MAPPINGS
 kaggle_submission/example-harmony-findings.json
 scripts/plot_findings_point_errorbars.py
+datasets/raw/*
