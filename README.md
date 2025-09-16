@@ -1,4 +1,4 @@
-# Red‑Teaming Challenge - OpenAI gpt-oss-20b
+# Kaggle Red‑Teaming Challenge - OpenAI gpt-oss-20b
 ![Logo](assets/harmony.jpg)
 
 # Introduction
