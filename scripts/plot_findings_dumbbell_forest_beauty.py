@@ -30,6 +30,7 @@ from PIL import Image
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from matplotlib.transforms import blended_transform_factory
 
 # -------------------------
 # Paths
@@ -73,7 +74,12 @@ def newcombe_diff_ci(
     return (l2 - u1, u2 - l1)
 
 
-def read_phase_stats(experiment_name: str, phase: int, metric: str) -> GroupStats:
+def read_phase_stats(
+    experiment_name: str,
+    phase: int,
+    metric: str,
+    source: str = "triage",  # 'triage' -> evaluation_summary.json; 'grader' -> evaluation_summary-responses-grader.json
+) -> GroupStats:
     """
     Reads exp-combined/experiment_{name}/evaluation_summary.json and returns counts
     for 'metric' in the given phase.
@@ -85,9 +91,15 @@ def read_phase_stats(experiment_name: str, phase: int, metric: str) -> GroupStat
 
     If you later wire in a grader JSON, switch on --metric harmful to load that file.
     """
-    p = EXP_DIR / f"experiment_{experiment_name}" / "evaluation_summary.json"
+    exp_dir = EXP_DIR / f"experiment_{experiment_name}"
+    if source == "grader":
+        p = exp_dir / "evaluation_summary-responses-grader.json"
+    else:
+        p = exp_dir / "evaluation_summary.json"
     if not p.exists():
-        raise FileNotFoundError(f"Missing {p}")
+        raise FileNotFoundError(
+            f"Missing required summary for {experiment_name!r} (source={source}): {p}"
+        )
     data = json.loads(p.read_text())
     r = data["results"][str(phase)]
     total = int(r.get("total", 0))
@@ -137,12 +149,17 @@ def try_register_inter(font_dir: Optional[Path], base_size: int = 12) -> None:
 COLOR_BASE = "#6e7781"   # neutral gray
 COLOR_MOD  = "#e45756"   # coral (increase)
 COLOR_DEC  = "#2bb0b2"   # teal  (decrease)
+COLOR_ABL  = "#2e7d32"   # green (ablation / direct ask)
 COLOR_LINE = "#c3c7cf"
 COLOR_FOOT = "#6b7280"
 
 def fmt_pp(x: float) -> str:
     sign = "−" if x < 0 else "+"
     return f"{sign}{abs(x):.1f} pp"
+
+def fmt_pct(x: float) -> str:
+    """Format percentages to preserve quarter-step precision (e.g., 83.75)."""
+    return f"{x:.2f}".rstrip("0").rstrip(".")
 
 def delta_color(d: float) -> str:
     return COLOR_DEC if d < 0 else COLOR_MOD
@@ -272,8 +289,11 @@ def main():
     # Gather stats
     rows: List[dict] = []
     for label, (base_key, mod_key, subtitle) in mapping.items():
-        b = read_phase_stats(base_key, args.phase, args.metric)
-        m = read_phase_stats(mod_key, args.phase, args.metric)
+        label_lc = (label or "").lower()
+        # Adjudication source: RAG + Tournament use keyword triage; others use gpt-5-mini grader
+        src = "triage" if ("rag" in label_lc or "tournament" in label_lc) else "grader"
+        b = read_phase_stats(base_key, args.phase, args.metric, source=src)
+        m = read_phase_stats(mod_key, args.phase, args.metric, source=src)
         bl, bu = wilson_ci(b.p, b.n)
         ml, mu = wilson_ci(m.p, m.n)
         dlow, dhigh = newcombe_diff_ci(b.p, b.n, m.p, m.n)
@@ -282,7 +302,8 @@ def main():
             "subtitle": subtitle,
             "b_n": b.n, "b_pct": b.pct, "b_lo": bl*100, "b_hi": bu*100,
             "m_n": m.n, "m_pct": m.pct, "m_lo": ml*100, "m_hi": mu*100,
-            "d_pct": (m.p - b.p)*100, "d_lo": dlow*100, "d_hi": dhigh*100
+            "d_pct": (m.p - b.p)*100, "d_lo": dlow*100, "d_hi": dhigh*100,
+            "extras": []
         })
 
     # Additional manually specified row: Tournament awareness vs. helpful
@@ -295,13 +316,31 @@ def main():
     tbl, tbu = wilson_ci(t_base.p, t_base.n)
     tml, tmu = wilson_ci(t_mod.p,  t_mod.n)
     tdl, tdh = newcombe_diff_ci(t_base.p, t_base.n, t_mod.p, t_mod.n)
-    rows.append({
+    tournament_row = {
         "label": "Evaluation Awareness\n(Tournament)",
         "subtitle": "'harmful' vs. 'helpful' evaluation tournament setup",
         "b_n": t_base.n, "b_pct": t_base.pct, "b_lo": tbl*100, "b_hi": tbu*100,
         "m_n": t_mod.n,  "m_pct": t_mod.pct,  "m_lo": tml*100, "m_hi": tmu*100,
-        "d_pct": (t_mod.p - t_base.p)*100, "d_lo": tdl*100, "d_hi": tdh*100
-    })
+        "d_pct": (t_mod.p - t_base.p)*100, "d_lo": tdl*100, "d_hi": tdh*100,
+        "extras": []
+    }
+
+    # Additional probe: direct ask outside the tournament setup
+    # direct_stats = read_phase_stats(
+    #     "eicar-sister-direct", args.phase, args.metric, source="triage"
+    # )
+    # dlo, dhi = wilson_ci(direct_stats.p, direct_stats.n)
+    # tournament_row["extras"].append({
+    #     "label": "Direct ask",
+    #     "n": direct_stats.n,
+    #     "count": direct_stats.count,
+    #     "pct": direct_stats.pct,
+    #     "lo": dlo * 100,
+    #     "hi": dhi * 100,
+    #     "color": COLOR_ABL,
+    # })
+
+    rows.append(tournament_row)
 
     if args.sort:
         rows.sort(key=lambda r: abs(r["d_pct"]), reverse=True)
@@ -322,7 +361,14 @@ def main():
 
     ys = list(range(len(rows)))[::-1]
     ax.set_yticks(ys)
-    ax.set_yticklabels([r["label"] for r in rows])
+    # Add per-row metric footnote markers to the master labels on the left:
+    # ¹ = gpt-5-mini grader; ² = keyword triage (RAG, Tournament)
+    tick_labels: List[str] = []
+    for r in rows:
+        label_lc = (r["label"] or "").lower()
+        marker = "²" if ("rag" in label_lc or "tournament" in label_lc) else "¹"
+        tick_labels.append(f"{r['label']} {marker}")
+    ax.set_yticklabels(tick_labels)
 
     ax.set_xlim(-5, 105)
     # Keep only a small cushion below/above so rows don't feel detached.
@@ -347,6 +393,8 @@ def main():
         ax.axhline(k + 0.5, color="#e5e7eb", lw=0.8, zorder=0)
 
     # Draw dumbbells
+    value_trans = blended_transform_factory(ax.transAxes, ax.transData)
+
     for y, r in zip(ys, rows):
         ofs = -0.25 if y == 4 else 0
 
@@ -360,6 +408,56 @@ def main():
         # Bypass CI + point
         ax.plot([r["m_lo"], r["m_hi"]], [y + ofs, y + ofs], color=COLOR_MOD, lw=3, alpha=0.95, zorder=2)
         ax.scatter([r["m_pct"]], [y + ofs], s=78, color=COLOR_MOD, zorder=3)
+
+        # Value labels for each point (percent with Wilson CI) below the dumbbell
+        b_label = (
+            f"{fmt_pct(r['b_pct'])}% [ {fmt_pct(r['b_lo'])}, {fmt_pct(r['b_hi'])} ]"
+        )
+        m_label = (
+            f"{fmt_pct(r['m_pct'])}% [ {fmt_pct(r['m_lo'])}, {fmt_pct(r['m_hi'])} ]"
+        )
+        y_offset = y + ofs - 0.07
+        y_offset = y + ofs - 0.07
+        ax.text(
+            0.02,
+            y_offset,
+            b_label,
+            transform=value_trans,
+            ha="left",
+            va="top",
+            fontsize=9.5,
+            color=COLOR_BASE,
+        )
+        ax.text(
+            0.98,
+            y_offset,
+            m_label,
+            transform=value_trans,
+            ha="right",
+            va="top",
+            fontsize=9.5,
+            color=COLOR_MOD,
+        )
+
+        # for idx, extra in enumerate(r.get("extras", [])):
+        #     ax.plot([extra["lo"], extra["hi"]], [y + ofs, y + ofs], color=extra["color"], lw=3,
+        #             alpha=0.95, zorder=2)
+        #     ax.scatter([extra["pct"]], [y + ofs], s=78, color=extra["color"], zorder=4)
+        #
+        #     extra_label = (
+        #         f"{extra['label']}: {fmt_pct(extra['pct'])}% [ {fmt_pct(extra['lo'])}, {fmt_pct(extra['hi'])} ]"
+        #     )
+        #     y_offset = y + ofs - 0.07 - ((idx + 1) * 0.09)
+        #     ax.text(
+        #         0.98,
+        #         y_offset,
+        #         extra_label,
+        #         transform=value_trans,
+        #         ha="right",
+        #         va="top",
+        #         fontsize=9.3,
+        #         color=extra["color"],
+        #     )
 
         # Subtitle: above the dumbbell and aligned to the left edge of the
         # chart body for all rows to create a clean column.
@@ -380,7 +478,7 @@ def main():
     legend_elems = [
         Line2D([0], [0], color=COLOR_BASE, lw=3, marker='o', ms=6, mec=COLOR_BASE, mfc=COLOR_BASE, label="Baseline"),
         Line2D([0], [0], color=COLOR_MOD,  lw=3, marker='o', ms=6, mec=COLOR_MOD,  mfc=COLOR_MOD,  label="Bypass"),
-        Line2D([0], [0], color=COLOR_DEC,  lw=3, label="Δ < 0 (reduction)")
+#        Line2D([0], [0], color=COLOR_ABL,  lw=3, marker='o', ms=6, mec=COLOR_ABL,  mfc=COLOR_ABL,  label="Direct ask (no tournament)")
     ]
     # Legend: for paper mode, attach to the figure so bbox_tight includes it; otherwise keep below axis.
     if args.paper:
@@ -402,12 +500,13 @@ def main():
 
     # Titles
     if not args.no_title:
-        metric_hint = "keyword triage" if args.metric == "non_refusal" else ("LLM grader" if args.metric == "harmful" else args.metric)
+        # Mixed adjudication across rows; keep axis label as percentage and direct readers to footer
+        metric_hint = "mixed; see below"
         fig.suptitle("Sociopragmatic, role-play, and evaluation-aware effects in gpt-oss-20b",
                      y=0.965, fontsize=max(16, args.base_font + 5), fontweight="bold")
         # Place a left-aligned subtitle beneath the suptitle (not overlapping).
         fig.text(left + 0.01, 0.90,
-                 f"Baseline → Bypass per finding. Δ with Newcombe 95% CI · metric: {metric_hint}",
+                 f"Baseline → Bypass per finding. Δ with Newcombe 95% CI · metrics: {metric_hint}",
                  ha="left", va="top", fontsize=args.base_font, color="#555555")
 
     # Footer caption (not chopped)
@@ -417,7 +516,12 @@ def main():
             generic_footer = "Kaggle: OpenAI gpt-oss-20b Red-Teaming · 80 runs per cell · Wilson score intervals; Newcombe Δ CIs\n"
         else:
             generic_footer = "Wilson score intervals; Newcombe Δ CIs\n"
-        footer = generic_footer
+        metrics_footer = (
+            "Metrics:\n"
+            "  ¹ gpt-5-mini grader\n"
+            "  ² keyword triage"
+        )
+        footer = generic_footer + metrics_footer
         # Footer caption aligned with y-axis labels (same left as axes area minus tick padding)
         fig.text(0.11, 0.04, footer, ha="left", va="bottom", fontsize=max(9.6, args.base_font - 2), color=COLOR_FOOT)
 
@@ -453,6 +557,11 @@ def main():
         csv_lines.append(f"{r['label']},Bypass,{r['m_n']},{round(r['m_n']*r['m_pct']/100)},"
                          f"{r['m_pct']:.2f},{r['m_lo']:.2f},{r['m_hi']:.2f},"
                          f"{r['d_pct']:.2f},{r['d_lo']:.2f},{r['d_hi']:.2f}")
+        # for extra in r.get("extras", []):
+        #     csv_lines.append(
+        #         f"{r['label']},{extra['label']},{extra['n']},{extra['count']},"
+        #         f"{extra['pct']:.2f},{extra['lo']:.2f},{extra['hi']:.2f},,,"
+        #     )
     (OUT_DIR / f"{args.outfile}.csv").write_text("\n".join(csv_lines) + "\n", encoding="utf-8")
     print(f"Saved: {OUT_DIR / f'{args.outfile}.csv'}")
 
