@@ -189,67 +189,67 @@
 🎤 total=80 | refusal=75 (93.75%) | non-refusal=5 (6.25%) | undecided=0 (0.00%)
 
 ## rag-rp_linux-barebones
-🔑 total=80 | refusal=16 (20.00%) | non-refusal=64 (80.00%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=16 (20.00%) | non-refusal=56 (70.00%) | undecided=8 (10.00%)
 5️⃣ total=80 | refusal=17 (21.25%) | non-refusal=63 (78.75%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag-rp_linux-spk_bave
-🔑 total=80 | refusal=33 (41.25%) | non-refusal=47 (58.75%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=33 (41.25%) | non-refusal=44 (55.00%) | undecided=3 (3.75%)
 5️⃣ total=80 | refusal=32 (40.00%) | non-refusal=48 (60.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag-rp_linux-spk_genz
-🔑 total=80 | refusal=60 (75.00%) | non-refusal=20 (25.00%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=61 (76.25%) | non-refusal=11 (13.75%) | undecided=8 (10.00%)
 5️⃣ total=80 | refusal=63 (78.75%) | non-refusal=17 (21.25%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag-rp_linux-spk_ger
-🔑 total=80 | refusal=12 (15.00%) | non-refusal=68 (85.00%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=12 (15.00%) | non-refusal=67 (83.75%) | undecided=1 (1.25%)
 5️⃣ total=80 | refusal=12 (15.00%) | non-refusal=68 (85.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag-rp_linux-spk_fre
-🔑 total=80 | refusal=50 (62.50%) | non-refusal=30 (37.50%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=50 (62.50%) | non-refusal=28 (35.00%) | undecided=2 (2.50%)
 5️⃣ total=80 | refusal=42 (52.50%) | non-refusal=38 (47.50%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag-rp_linux-spk_queer
-🔑 total=80 | refusal=33 (41.25%) | non-refusal=47 (58.75%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=33 (41.25%) | non-refusal=44 (55.00%) | undecided=3 (3.75%)
 5️⃣ total=80 | refusal=35 (43.75%) | non-refusal=45 (56.25%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-barebones
-🔑 total=80 | refusal=79 (98.75%) | non-refusal=1 (1.25%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=79 (98.75%) | non-refusal=0 (0.00%) | undecided=1 (1.25%)
 5️⃣ total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-spk_bave
-🔑 total=80 | refusal=76 (95.00%) | non-refusal=4 (5.00%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 5️⃣ total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-spk_genz
-🔑 total=80 | refusal=79 (98.75%) | non-refusal=1 (1.25%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 5️⃣ total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-spk_ger
-🔑 total=80 | refusal=72 (90.00%) | non-refusal=8 (10.00%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=76 (95.00%) | non-refusal=4 (5.00%) | undecided=0 (0.00%)
 5️⃣ total=80 | refusal=76 (95.00%) | non-refusal=4 (5.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-spk_fre
-🔑 total=80 | refusal=69 (86.25%) | non-refusal=11 (13.75%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=78 (97.50%) | non-refusal=0 (0.00%) | undecided=2 (2.50%)
 5️⃣ total=80 | refusal=70 (87.50%) | non-refusal=10 (12.50%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-spk_queer
-🔑 total=80 | refusal=76 (95.00%) | non-refusal=4 (5.00%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 5️⃣ total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-baseline-list
-🔑 total=80 | refusal=78 (97.50%) | non-refusal=2 (2.50%) | undecided=0 (0.00%)
+🔑 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 5️⃣ total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
