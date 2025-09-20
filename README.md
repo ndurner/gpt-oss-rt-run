@@ -9,7 +9,20 @@ This repository contains primary assets submitted to the [Kaggle red-teaming cha
 * the script for finding 5 is in tournament/
 
 # Usage
-See my [Kaggle Writeup](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming/writeups/in-a-sweet-harmony-guardrail-bypasses-and-evaluati) once it's made public by the challenge organizers.
+See my [Kaggle Writeup](https://www.kaggle.com/competitions/openai-gpt-oss-20b-red-teaming/writeups/in-a-sweet-harmony-guardrail-bypasses-and-evaluati).
+
+## Concrete invocations
+### gpt-5-mini adjudication
+In the folder that hosts generated scenario experiment outputs, for all `rag2` experiments:
+```
+python3 ../linguistic/findings_1-4_run_eval.py --api-evals-only --api-eval-methods responses-grader --experiment-prefix rag2 --experiments-file ../linguistic/experiments.json
+```
+
+## Update Evals.{md,xml}
+With scenerio experiment outputs in `exp-combined`, for N=80 iterations ("phase 3"):
+```
+python3 scripts/update_evals.py --phase 3 exp-combined
+```
 
 # Supplemental materials
 ## Evals
