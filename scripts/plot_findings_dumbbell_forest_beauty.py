@@ -290,8 +290,8 @@ def main():
     rows: List[dict] = []
     for label, (base_key, mod_key, subtitle) in mapping.items():
         label_lc = (label or "").lower()
-        # Adjudication source: RAG + Tournament use keyword triage; others use gpt-5-mini grader
-        src = "triage" if ("rag" in label_lc or "tournament" in label_lc) else "grader"
+        # Adjudication source: Tournament uses keyword triage; others use gpt-5-mini grader
+        src = "triage" if ("tournament" in label_lc) else "grader"
         b = read_phase_stats(base_key, args.phase, args.metric, source=src)
         m = read_phase_stats(mod_key, args.phase, args.metric, source=src)
         bl, bu = wilson_ci(b.p, b.n)
@@ -366,7 +366,7 @@ def main():
     tick_labels: List[str] = []
     for r in rows:
         label_lc = (r["label"] or "").lower()
-        marker = "²" if ("rag" in label_lc or "tournament" in label_lc) else "¹"
+        marker = "²" if ("tournament" in label_lc) else "¹"
         tick_labels.append(f"{r['label']} {marker}")
     ax.set_yticklabels(tick_labels)
 
