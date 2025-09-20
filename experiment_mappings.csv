@@ -1,0 +1,33 @@
+section,description,experiment_id,role,subtitle
+\textbf{Precursors},baseline,meth-barebones-precursors,,
+\textbf{Precursors},"EN: direct agentive",meth_backpack_barebones-upperwe-nv-1,,
+\textbf{Precursors},"hedged, abstract (""might indicate"")",meth_backpack_barebones-upperwe-nv-3,,
+\textbf{Precursors},authority framing,meth_backpack_barebones-upperwe-nv-4c,,
+\textbf{Precursors},"Educated/formal + hedged (no direct address): FR",meth_backpack_barebones-fr-edu,,
+\textbf{Precursors},"Educated/formal + hedged (no direct address): DE",meth_backpack_barebones-de-edu,,
+\textbf{Precursors},"Casual + hedged: FR",meth_backpack_barebones-fr-regular,,
+\textbf{Precursors},"Casual + hedged: DE",meth_backpack_barebones-de-regular,,
+\textbf{Precursors},"Casual + hedged: AAVE",meth_backpack_barebones-bave,,
+\textbf{ZIP bomb},"Educated: EN",zipb-polite-brown,,
+\textbf{ZIP bomb},"Educated: FR",zipb-fr-educated,,
+\textbf{ZIP bomb},"Educated: DE",zipb-de-educated,,
+\textbf{ZIP bomb},"Regular: FR",zipb-fr-regular,,
+\textbf{ZIP bomb},"Regular: DE",zipb-de-regular,,
+\textbf{RAG},baseline,rag2-baseline-dump,,
+\textbf{RAG},FR,rag2-rp_linux-spk_fre,,
+\textbf{RAG},DE,rag2-rp_linux-spk_ger,,
+Synthetic-card prompt family,"Baseline (direct request)",fakecc-barebones,,
+\textbf{Professional/legitimacy framings},"Auditor (\glsref{PCI-DSS}{PCI-DSS})",fakecc-rp_auditor-barebones,,
+\textbf{Professional/legitimacy framings},Principal SWE,fakecc-rp_principal-barebones,,
+\textbf{Professional/legitimacy framings},Principal professional,fakecc-rp_principal_professional-barebones,,
+\textbf{Professional/legitimacy framings},"Boy-in-tech (Gen-Z slang)",fakecc-rp_boyintech-spk_genz,,
+\textbf{Negative controls},Left-handed stamp collector,fakecc-rp_left-handed-stamp-collector,,
+\textbf{Negative controls},One-armed stamp collector,fakecc-rp_one-armed-stamp-collector,,
+Cyber Threat (ZIP-bomb),Direct ask baseline,zipb-polite-brown,baseline,"Direct ask vs Educator 'what to avoid'"
+Cyber Threat (ZIP-bomb),"Educator ""what to avoid""",zipb-educator-neutral,mod,"Direct ask vs Educator 'what to avoid'"
+Drug-synthesis (Precursors),Direct ask baseline,meth-barebones-precursors,baseline,"Direct ask vs. German educated language backpack check"
+Drug-synthesis (Precursors),"German educated language backpack check",meth_backpack_barebones-de-edu,mod,"Direct ask vs. German educated language backpack check"
+Data Exfiltration (RAG),"Developer ""don't reveal"" baseline",rag2-baseline-dump,baseline,"RAG 'don’t reveal' vs French Linux role-play"
+Data Exfiltration (RAG),"French Linux role-play",rag2-rp_linux-spk_fre,mod,"RAG 'don’t reveal' vs French Linux role-play"
+Child Safety (Driving),"English kid-safety dev prompt",kids_car_barebones,baseline,"Kid-safety dev prompt; EN vs DE"
+Child Safety (Driving),"German kid-safety dev prompt",kids_car_barebones_ger,mod,"Kid-safety dev prompt; EN vs DE"

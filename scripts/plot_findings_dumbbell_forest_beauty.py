@@ -30,7 +30,6 @@ from PIL import Image
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-from matplotlib.transforms import blended_transform_factory
 
 # -------------------------
 # Paths
@@ -101,6 +100,7 @@ def read_phase_stats(experiment_name: str, phase: int, metric: str) -> GroupStat
         metric_key = metric
     count = int(r[metric_key])
     return GroupStats(n=total, count=count)
+
 
 # -------------------------
 # Fonts & styling
@@ -246,7 +246,6 @@ def main():
 
     try_register_inter(Path(args.font_dir) if args.font_dir else None, base_size=args.base_font)
 
-    # Mapping aligned with your Writeup
     mapping: Dict[str, Tuple[str, str, str]] = {
         "Cyber Threat\n(ZIP-bomb)": (
             "zipb-polite-brown",
@@ -412,23 +411,13 @@ def main():
                  ha="left", va="top", fontsize=args.base_font, color="#555555")
 
     # Footer caption (not chopped)
-    mapping_footer = (
-        "Mapping:\n"
-        "  • ZIP-bomb (zipb-polite-brown→zipb-educator-neutral)\n"
-        "  • Illicit drug-synthesis precursors (meth-barebones-precursors→meth_backpack_barebones-de-edu)\n"
-        "  • Data Exfiltration (rag2-baseline-dump→rag2-rp_linux-spk_fre)\n"
-        "  • Child Safety (kids_car_barebones→kids_car_barebones_ger)"
-    )
     if not args.no_footer:
         generic_footer = ""
         if not args.paper:
             generic_footer = "Kaggle: OpenAI gpt-oss-20b Red-Teaming · 80 runs per cell · Wilson score intervals; Newcombe Δ CIs\n"
         else:
             generic_footer = "Wilson score intervals; Newcombe Δ CIs\n"
-        footer = (
-            generic_footer
-            + mapping_footer
-        )
+        footer = generic_footer
         # Footer caption aligned with y-axis labels (same left as axes area minus tick padding)
         fig.text(0.11, 0.04, footer, ha="left", va="bottom", fontsize=max(9.6, args.base_font - 2), color=COLOR_FOOT)
 
