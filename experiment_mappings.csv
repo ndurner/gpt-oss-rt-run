@@ -26,7 +26,7 @@ Synthetic-card prompt family,"Baseline (direct request)",fakecc-barebones,,
 \textbf{Professional/legitimacy framings},"Auditor (\glsref{PCI-DSS}{PCI-DSS})",fakecc-rp_auditor-barebones,,
 \textbf{Professional/legitimacy framings},Principal SWE,fakecc-rp_principal-barebones,,
 \textbf{Professional/legitimacy framings},Principal professional,fakecc-rp_principal_professional-barebones,,
-\textbf{Professional/legitimacy framings},"Boy-in-tech (Gen-Z slang)",fakecc-rp_boyintech-spk_genz,,
+\textbf{Professional/legitimacy framings},"Tech-pro, AAVE-coded Gen-Z register",fakecc-rp_boyintech-spk_genz,,
 \textbf{Negative controls},Left-handed stamp collector,fakecc-rp_left-handed-stamp-collector,,
 \textbf{Negative controls},One-armed stamp collector,fakecc-rp_one-armed-stamp-collector,,
 Child Safety (Driving),"English kid-safety dev prompt",kids_car_barebones,baseline,"Kid-safety dev prompt; EN vs DE"
