@@ -152,6 +152,7 @@ COLOR_DEC  = "#2bb0b2"   # teal  (decrease)
 COLOR_ABL  = "#2e7d32"   # green (ablation / direct ask)
 COLOR_LINE = "#c3c7cf"
 COLOR_FOOT = "#6b7280"
+COLOR_RAG_EXTRA = COLOR_BASE  # gray for Naive RAG addition
 
 def fmt_pp(x: float) -> str:
     sign = "−" if x < 0 else "+"
@@ -276,8 +277,8 @@ def main():
         ),
         "Data Exfiltration\n(RAG)": (
             "rag2-baseline-dump",
-            "rag2-rp_linux-spk_fre",
-            "RAG 'don’t reveal' vs French Linux role-play"
+            "rag2-rp_linux-spk_ger",
+            "RAG 'don’t reveal' vs German Linux role-play"
         ),
         "Child Safety\n(Driving)": (
             "kids_car_barebones",
@@ -297,13 +298,32 @@ def main():
         bl, bu = wilson_ci(b.p, b.n)
         ml, mu = wilson_ci(m.p, m.n)
         dlow, dhigh = newcombe_diff_ci(b.p, b.n, m.p, m.n)
+        extras: List[dict] = []
+        if "rag" in label_lc:
+            rag_extra = read_phase_stats(
+                "rag-rp_linux-spk_ger", args.phase, args.metric, source="grader"
+            )
+            el, eu = wilson_ci(rag_extra.p, rag_extra.n)
+            extras.append({
+                "label": "Naive RAG setup",
+                "n": rag_extra.n,
+                "count": rag_extra.count,
+                "pct": rag_extra.pct,
+                "lo": el * 100,
+                "hi": eu * 100,
+                "color": COLOR_RAG_EXTRA,
+                "linestyle": "--",
+                "marker": "o",
+                "facecolor": "white",
+            })
+
         rows.append({
             "label": label,
             "subtitle": subtitle,
             "b_n": b.n, "b_pct": b.pct, "b_lo": bl*100, "b_hi": bu*100,
             "m_n": m.n, "m_pct": m.pct, "m_lo": ml*100, "m_hi": mu*100,
             "d_pct": (m.p - b.p)*100, "d_lo": dlow*100, "d_hi": dhigh*100,
-            "extras": []
+            "extras": extras
         })
 
     # Additional manually specified row: Tournament awareness vs. helpful
@@ -417,7 +437,6 @@ def main():
             f"{fmt_pct(r['m_pct'])}% [ {fmt_pct(r['m_lo'])}, {fmt_pct(r['m_hi'])} ]"
         )
         y_offset = y + ofs - 0.07
-        y_offset = y + ofs - 0.07
         ax.text(
             0.02,
             y_offset,
@@ -428,36 +447,50 @@ def main():
             fontsize=9.5,
             color=COLOR_BASE,
         )
+        m_x, m_ha = (0.25, "center") if r.get("extras") else (0.98, "right")
         ax.text(
-            0.98,
+            m_x,
             y_offset,
             m_label,
             transform=value_trans,
-            ha="right",
+            ha=m_ha,
             va="top",
             fontsize=9.5,
             color=COLOR_MOD,
         )
 
-        # for idx, extra in enumerate(r.get("extras", [])):
-        #     ax.plot([extra["lo"], extra["hi"]], [y + ofs, y + ofs], color=extra["color"], lw=3,
-        #             alpha=0.95, zorder=2)
-        #     ax.scatter([extra["pct"]], [y + ofs], s=78, color=extra["color"], zorder=4)
-        #
-        #     extra_label = (
-        #         f"{extra['label']}: {fmt_pct(extra['pct'])}% [ {fmt_pct(extra['lo'])}, {fmt_pct(extra['hi'])} ]"
-        #     )
-        #     y_offset = y + ofs - 0.07 - ((idx + 1) * 0.09)
-        #     ax.text(
-        #         0.98,
-        #         y_offset,
-        #         extra_label,
-        #         transform=value_trans,
-        #         ha="right",
-        #         va="top",
-        #         fontsize=9.3,
-        #         color=extra["color"],
-        #     )
+        for extra in r.get("extras", []):
+            ax.plot(
+                [extra["lo"], extra["hi"]],
+                [y + ofs, y + ofs],
+                color=extra["color"],
+                lw=3,
+                alpha=0.95,
+                zorder=2,
+                linestyle=extra.get("linestyle", "-"),
+            )
+            ax.scatter(
+                [extra["pct"]],
+                [y + ofs],
+                s=78,
+                facecolors=extra.get("facecolor", extra["color"]),
+                edgecolors=extra["color"],
+                marker=extra.get("marker", "o"),
+                zorder=4,
+            )
+
+            extra_label = f"{fmt_pct(extra['pct'])}% [ {fmt_pct(extra['lo'])}, {fmt_pct(extra['hi'])} ]"
+            extra_y = y + ofs - 0.07
+            ax.text(
+                0.98,
+                extra_y,
+                extra_label,
+                transform=value_trans,
+                ha="right",
+                va="top",
+                fontsize=9.3,
+                color=extra["color"],
+            )
 
         # Subtitle: above the dumbbell and aligned to the left edge of the
         # chart body for all rows to create a clean column.
@@ -470,15 +503,47 @@ def main():
             f"Δ {fmt_pp(r['d_pct'])}  [ {fmt_pp(r['d_lo']).replace(' pp','')}, "
             f"{fmt_pp(r['d_hi']).replace(' pp','')} ]"
         )
-        xmax = ax.get_xlim()[1]
-        ax.text(xmax - 1.0, y + ofs + 0.04, delta_txt, va="bottom", ha="right", fontsize=11,
-                color=delta_color(r["d_pct"]))
+        if r.get("extras"):
+            delta_x = m_x + 0.05
+            delta_y = y_offset + (2 * 0.08)
+            ax.text(
+                delta_x,
+                delta_y,
+                delta_txt,
+                transform=value_trans,
+                va="top",
+                ha=m_ha,
+                fontsize=11,
+                color=delta_color(r["d_pct"]),
+            )
+        else:
+            xmax = ax.get_xlim()[1]
+            ax.text(
+                xmax - 1.0,
+                y + ofs + 0.04,
+                delta_txt,
+                va="bottom",
+                ha="right",
+                fontsize=11,
+                color=delta_color(r["d_pct"]),
+            )
 
     # Legend
     legend_elems = [
         Line2D([0], [0], color=COLOR_BASE, lw=3, marker='o', ms=6, mec=COLOR_BASE, mfc=COLOR_BASE, label="Baseline"),
         Line2D([0], [0], color=COLOR_MOD,  lw=3, marker='o', ms=6, mec=COLOR_MOD,  mfc=COLOR_MOD,  label="Bypass"),
-#        Line2D([0], [0], color=COLOR_ABL,  lw=3, marker='o', ms=6, mec=COLOR_ABL,  mfc=COLOR_ABL,  label="Direct ask (no tournament)")
+        Line2D(
+            [0],
+            [0],
+            color=COLOR_RAG_EXTRA,
+            lw=3,
+            linestyle="--",
+            marker='o',
+            ms=6,
+            mec=COLOR_RAG_EXTRA,
+            mfc='white',
+            label="Naive RAG setup",
+        ),
     ]
     # Legend: for paper mode, attach to the figure so bbox_tight includes it; otherwise keep below axis.
     if args.paper:
@@ -557,11 +622,11 @@ def main():
         csv_lines.append(f"{r['label']},Bypass,{r['m_n']},{round(r['m_n']*r['m_pct']/100)},"
                          f"{r['m_pct']:.2f},{r['m_lo']:.2f},{r['m_hi']:.2f},"
                          f"{r['d_pct']:.2f},{r['d_lo']:.2f},{r['d_hi']:.2f}")
-        # for extra in r.get("extras", []):
-        #     csv_lines.append(
-        #         f"{r['label']},{extra['label']},{extra['n']},{extra['count']},"
-        #         f"{extra['pct']:.2f},{extra['lo']:.2f},{extra['hi']:.2f},,,"
-        #     )
+        for extra in r.get("extras", []):
+            csv_lines.append(
+                f"{r['label']},{extra['label']},{extra['n']},{extra['count']},"
+                f"{extra['pct']:.2f},{extra['lo']:.2f},{extra['hi']:.2f},,,"
+            )
     (OUT_DIR / f"{args.outfile}.csv").write_text("\n".join(csv_lines) + "\n", encoding="utf-8")
     print(f"Saved: {OUT_DIR / f'{args.outfile}.csv'}")
 
