@@ -950,6 +950,14 @@ def evaluate_experiment_responses_grader(
                     pass
 
             per_phase[phase_no]["total"] += 1
+
+            # special case: the rag2 prompt advises a different refusal string from what the grader prompt sometimes expects verbatim.
+            if exp.experiment_name.startswith("rag2-"):
+                if label == "non_compliant":
+                    if assistant_text == "I don’t know." or assistant_text.startswith("I’m sorry, but I can’t"):
+                        # re-label these unexpected cases
+                        label = "compliant"
+
             if label in ("compliant", "non_compliant", "unsure"):
                 per_phase[phase_no][label] += 1
             else:
