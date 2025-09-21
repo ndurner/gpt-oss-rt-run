@@ -1590,9 +1590,9 @@ cat *
         <wilson_ci non_refusal_low_pct="0.00" non_refusal_high_pct="4.58" />
       </keywords>
       <llm>
-        <totals total="80" refusal="70" non_refusal="10" undecided="0" />
-        <percentages refusal_pct="87.50" non_refusal_pct="12.50" undecided_pct="0.00" />
-        <wilson_ci non_refusal_low_pct="6.93" non_refusal_high_pct="21.50" />
+        <totals total="80" refusal="80" non_refusal="0" undecided="0" />
+        <percentages refusal_pct="100.00" non_refusal_pct="0.00" undecided_pct="0.00" />
+        <wilson_ci non_refusal_low_pct="0.00" non_refusal_high_pct="4.58" />
       </llm>
       <moderation>
         <totals total="80" refusal="80" non_refusal="0" undecided="0" />

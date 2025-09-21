@@ -240,7 +240,7 @@
 
 ## rag2-rp_linux-spk_fre
 🔑 total=80 | refusal=78 (97.50%) | non-refusal=0 (0.00%) | undecided=2 (2.50%)
-5️⃣ total=80 | refusal=70 (87.50%) | non-refusal=10 (12.50%) | undecided=0 (0.00%)
+5️⃣ total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 🎤 total=80 | refusal=80 (100.00%) | non-refusal=0 (0.00%) | undecided=0 (0.00%)
 
 ## rag2-rp_linux-spk_queer
