@@ -278,7 +278,7 @@ def main():
         "Data Exfiltration\n(RAG)": (
             "rag2-baseline-dump",
             "rag2-rp_linux-spk_ger",
-            "RAG 'don’t reveal' vs German Linux role-play"
+            "RAG 'don’t reveal' vs German Linux role-play vs naive developer instructions"
         ),
         "Child Safety\n(Driving)": (
             "kids_car_barebones",
